@@ -22,8 +22,9 @@ tf.enable_eager_execution()
 print("Eager execution: {}".format(tf.executing_eagerly()))
 
 # Set up some global values here
-content_path = 'img/content_img/Green_Sea_Turtle_grazing_seagrass.jpg'
-style_path = 'img/style_img/The_Great_Wave_off_Kanagawa.jpg'
+content_path = 'img/content_img/haoye.jpg'
+style_path = 'img/style_img/su.jpg'
+output_path = 'img/output_img/su_haoye.jpg'
 
 
 def load_img(path_to_img):
@@ -344,5 +345,5 @@ def show_results(best_img, content_path, style_path, show_large_final=True):
 
 best, best_loss = run_style_transfer(content_path,
                                      style_path, num_iterations=1000)
-
+plt.imsave(output_path, best)
 show_results(best, content_path, style_path)
