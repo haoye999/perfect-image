@@ -22,9 +22,10 @@ tf.enable_eager_execution()
 print("Eager execution: {}".format(tf.executing_eagerly()))
 
 # Set up some global values here
-content_path = 'img/content_img/haoye.jpg'
-style_path = 'img/style_img/su.jpg'
-output_path = 'img/output_img/su_haoye.jpg'
+content_path = 'img/content_img/face2.jpg'
+style_path = 'img/style_img/The_Great_Wave_off_Kanagawa.jpg'
+output_path = 'img/output_img/face2_output.jpg'
+progress_path = 'img/output_img/output_pro/' + 'face2_output_iterations_'
 
 
 def load_img(path_to_img):
@@ -307,6 +308,7 @@ def run_style_transfer(content_path,
             imgs.append(plot_img)
             IPython.display.clear_output(wait=True)
             IPython.display.display_png(Image.fromarray(plot_img))
+            plt.imsave(progress_path + str(i) + '.jpg', plot_img) 
             print('Iteration: {}'.format(i))
             print('Total loss: {:.4e}, '
                   'style loss: {:.4e}, '
@@ -343,7 +345,6 @@ def show_results(best_img, content_path, style_path, show_large_final=True):
         plt.show()
 
 
-best, best_loss = run_style_transfer(content_path,
-                                     style_path, num_iterations=1000)
+best, best_loss = run_style_transfer(content_path, style_path, num_iterations=1000, content_weight=1e4, style_weight=1e-2)
 plt.imsave(output_path, best)
 show_results(best, content_path, style_path)
