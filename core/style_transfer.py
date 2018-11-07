@@ -6,26 +6,48 @@ mpl.rcParams['axes.grid'] = False
 
 import numpy as np
 from PIL import Image
+import IPython.display
 import time
 import functools
-
 import tensorflow as tf
 import tensorflow.contrib.eager as tfe
-
 from tensorflow.python.keras.preprocessing import image as kp_image
 from tensorflow.python.keras import models
 from tensorflow.python.keras import losses
 from tensorflow.python.keras import layers
 from tensorflow.python.keras import backend as K
 
-tf.enable_eager_execution()
-print("Eager execution: {}".format(tf.executing_eagerly()))
+# tf.enable_eager_execution()
+# print("Eager execution: {}".format(tf.executing_eagerly()))
 
-# Set up some global values here
-content_path = 'img/content_img/face2.jpg'
-style_path = 'img/style_img/The_Great_Wave_off_Kanagawa.jpg'
-output_path = 'img/output_img/face2_output.jpg'
-progress_path = 'img/output_img/output_pro/' + 'face2_output_iterations_'
+
+tf.enable_eager_execution()
+# Content layer where will pull our feature maps
+content_layers = ['block5_conv2']
+
+# Style layer we are interested in
+style_layers = ['block1_conv1',
+                'block2_conv1',
+                'block3_conv1',
+                'block4_conv1',
+                'block5_conv1'
+                ]
+
+num_content_layers = len(content_layers)
+num_style_layers = len(style_layers)
+
+
+def main():
+    # Set up some global values here
+    content_path = 'img/content_img/face2.jpg'
+    style_path = 'img/style_img/The_Great_Wave_off_Kanagawa.jpg'
+    output_path = 'img/output_img/face2_output.jpg'
+    progress_path = 'img/output_img/output_pro/' + 'face2_output_iterations_'
+
+    best, best_loss = run_style_transfer(
+        content_path, style_path, progress_path, num_iterations=1000, content_weight=1e4, style_weight=1e-2)
+    plt.imsave(output_path, best)
+    show_results(best, content_path, style_path)
 
 
 def load_img(path_to_img):
@@ -77,21 +99,6 @@ def deprocess_img(processed_img):
 
     x = np.clip(x, 0, 255).astype('uint8')
     return x
-
-
-# Content layer where will pull our feature maps
-content_layers = ['block5_conv2']
-
-# Style layer we are interested in
-style_layers = ['block1_conv1',
-                'block2_conv1',
-                'block3_conv1',
-                'block4_conv1',
-                'block5_conv1'
-                ]
-
-num_content_layers = len(content_layers)
-num_style_layers = len(style_layers)
 
 
 def get_model():
@@ -232,14 +239,13 @@ def compute_grads(cfg):
     return tape.gradient(total_loss, cfg['init_image']), all_loss
 
 
-import IPython.display
-
-
 def run_style_transfer(content_path,
                        style_path,
+                       progress_path,
                        num_iterations=1000,
                        content_weight=1e3,
                        style_weight=1e-2):
+
     # We don't need to (or want to) train any layers of our model, so we set their
     # trainable to false.
     model = get_model()
@@ -308,7 +314,7 @@ def run_style_transfer(content_path,
             imgs.append(plot_img)
             IPython.display.clear_output(wait=True)
             IPython.display.display_png(Image.fromarray(plot_img))
-            plt.imsave(progress_path + str(i) + '.jpg', plot_img) 
+            plt.imsave(progress_path + str(i) + '.jpg', plot_img)
             print('Iteration: {}'.format(i))
             print('Total loss: {:.4e}, '
                   'style loss: {:.4e}, '
@@ -345,6 +351,5 @@ def show_results(best_img, content_path, style_path, show_large_final=True):
         plt.show()
 
 
-best, best_loss = run_style_transfer(content_path, style_path, num_iterations=1000, content_weight=1e4, style_weight=1e-2)
-plt.imsave(output_path, best)
-show_results(best, content_path, style_path)
+if __name__ == '__main__':
+    main()
