@@ -16,6 +16,9 @@ from tensorflow.python.keras import models
 from tensorflow.python.keras import losses
 from tensorflow.python.keras import layers
 from tensorflow.python.keras import backend as K
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
 # tf.enable_eager_execution()
 # print("Eager execution: {}".format(tf.executing_eagerly()))
@@ -43,7 +46,7 @@ def main():
     style_path = 'img/style_img/The_Great_Wave_off_Kanagawa.jpg'
     output_path = 'img/output_img/face2_output.jpg'
     progress_path = 'img/output_img/output_pro/' + 'face2_output_iterations_'
-
+    count_progress = 0
     best, best_loss = run_style_transfer(
         content_path, style_path, progress_path, num_iterations=1000, content_weight=1e4, style_weight=1e-2)
     plt.imsave(output_path, best)
@@ -242,6 +245,8 @@ def compute_grads(cfg):
 def run_style_transfer(content_path,
                        style_path,
                        progress_path,
+                       count_progress=0,
+                       lbl_progress_img=0,
                        num_iterations=1000,
                        content_weight=1e3,
                        style_weight=1e-2):
@@ -320,6 +325,19 @@ def run_style_transfer(content_path,
                   'style loss: {:.4e}, '
                   'content loss: {:.4e}, '
                   'time: {:.4f}s'.format(loss, style_score, content_score, time.time() - start_time))
+            if lbl_progress_img == 0:
+                pass
+            else:
+                pixmap = QPixmap(progress_path + str(i) + '.jpg')
+                scaredPixmap = pixmap.scaled(
+                    479, 299, aspectRatioMode=Qt.KeepAspectRatio)
+                lbl_progress_img.setPixmap(scaredPixmap)
+                lbl_progress_img.setAlignment(Qt.AlignCenter)
+        if count_progress == 0:
+            pass
+        
+        else:
+            count_progress.setValue(i / num_iterations * 100)
     print('Total time: {:.4f}s'.format(time.time() - global_start))
     IPython.display.clear_output(wait=True)
     plt.figure(figsize=(14, 4))
